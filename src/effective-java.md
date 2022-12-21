@@ -1,0 +1,78 @@
+# Effective-java
+## 객체 생성과 파괴
+* 객체를 생성하는 다양한 방법과 파괴 전에 수행해야 할 정리 작업을 관리하는 방법
+
+### 아이템 1. 생성자 대신 정적 팩토리 메서드를 고려하라
+* 핵심정리
+  * 장점
+    * 이름을 가질 수 있다(동일한 시그니처의 생성자를 두개 가질 수 없다.)
+    * 호출될 때마다 인스턴스를 새로 생성하지 않아도 된다.(Boolean.valueOf)
+    * 반환 타입의 하위 타입 객체를 반환할 수 있는 능력이 있다(인터페이스 기반 프레임워크, 인터페이스에서 정적 메소드)
+    * 입력 매개변수에 따라 매번 다른 클래스의 객체를 반환할 수 있다.(EnumSet)
+    * 정적 팩토리 메서드를 작성하는 시점에는 반환할 객체의 클래스가 존재하지 않아도 된다.(서비스 제공자 프레임워크)
+  * 단점
+    * 상송을 하려면 public이나 protected 생성하기 
+
+
+### Sample Code
+```java
+public class Order {
+
+	private boolean prime;
+
+	private boolean urgent;
+
+	private Product product;
+
+  public Order(Product product, boolean prime) {
+    this.prime = prime;
+    this.product = product;
+  }
+}
+```
+
+* 위 코드에서 prime대신 urgent를 받는 생성자를 추가로 선언하면 컴파일 에러가 발생한다.
+  * 생성자의 시그니처는 받는 파라미터 타입까지 본다.   
+  완전하게 동일한 시그니처의 생성자는 같이 있을 수 없다
+  
+```java
+public class Order {
+  ...
+  
+  public Order(Product product, boolean prime) {
+    this.prime = prime;
+    this.product = product;
+  }
+
+  public Order(Product product, boolean urgent) {
+    this.urgent = urgent;
+    this.product = product;
+  }
+}
+```
+
+
+### 첫번째 장점!!!
+* 이 문제를 해결하기 위해 정적 팩토리 메소드를 활용하자!!!!
+* primeOrder와 urgentOrder 처럼 (만들어지는 객체의 특징을)메소드 명으로 의도를 명확하게 나타낼 수 있다.
+
+```java
+
+public class Order {
+  ...
+  public static Order primeOrder(Product product) {
+    Order order = new Order();
+    order.prime = true;
+    order.product = product;
+    return order;
+  }
+  
+  public static Order urgentOrder(Product product) {
+    Order order = new Order();
+    order.urgent = true;
+    order.product = product;
+    return order;
+  }
+}
+
+```
