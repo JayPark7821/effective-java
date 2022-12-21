@@ -52,7 +52,7 @@ public class Order {
 ```
 
 
-### 첫번째 장점!!!
+### 정적 팩토리 메서드의 첫번째 장점!!!
 * 이 문제를 해결하기 위해 정적 팩토리 메소드를 활용하자!!!!
 * primeOrder와 urgentOrder 처럼 (만들어지는 객체의 특징을)메소드 명으로 의도를 명확하게 나타낼 수 있다.
 
@@ -76,3 +76,56 @@ public class Order {
 }
 
 ```
+
+### 정적 팩토리 메서드의 두번째 장점!!!
+* 인스턴스의 생성을 통제할 수 있다!
+
+```java
+public class Settings {
+  private boolean useAutoSteering;
+  private boolean useABS;
+  private Difficulty difficulty;
+
+  public static void main(String[] args) {
+    System.out.println(new Settings());
+    System.out.println(new Settings());
+    System.out.println(new Settings());
+  }
+}
+```
+* 위 처럼 생성자를 사용하면 매번 새로운 인스턴스가 생성된다
+![image](https://user-images.githubusercontent.com/60100532/208928268-d06ea596-1b77-4700-9369-c2c74c68a4aa.png)
+* 하지만 우리는 가끔 인스턴스를 매번 새로 만들지   
+  아니면 특정 경우에만 생성할지 등등   
+  인스턴스를 생성하는 방법을 통제할 필요가 생길 때가 있다.
+* 생성자가 있다면 통제가 불가능하다!  
+  (어디서든 생성자를 호출해서 새로운 인스턴스를 만들 수 있다.)
+
+* 만약에 우리가 위의 Settings라는 인스턴스를 오직 1개만 만들어서 사용해야 한다면
+* 그때 정적 팩토리 메소드를 통해서 통제할 수 있다.  
+
+
+```java
+public class Settings {
+  private boolean useAutoSteering;
+  private boolean useABS;
+  private Difficulty difficulty;
+  
+  private Settings() {
+  }
+
+  private static final Settings SETTINGS = new Settings();
+  
+  public static Settings newInstance() {
+    return SETTINGS;
+  }
+}
+```
+1. 기본 생성자를 private으로 선언해 외부에서 아무도 호출하지 못하게 한다.
+2. 미리 Settings를 만들어 놓고
+3. newInstance()라는 메소드로 정적 팩토리 메소드를 선언해 미리 생성해놓은 Settings를 return한다. 
+> 이렇게 하면 외부에서 Settings인스턴스를 가져갈 수 있는 방법이 오로지 newInstance라는 정적 팩토리 메소드를 통해서만 가져갈 수 있다.
+> 
+
+* example : Boolean.valueOf(false);
+  ![image](https://user-images.githubusercontent.com/60100532/208933098-071050e9-ba2a-4af8-835f-bb14306f131d.png)
