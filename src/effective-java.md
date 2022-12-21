@@ -129,3 +129,10 @@ public class Settings {
 
 * example : Boolean.valueOf(false);
   ![image](https://user-images.githubusercontent.com/60100532/208933098-071050e9-ba2a-4af8-835f-bb14306f131d.png)
+
+* 디자인 패턴 
+* 플라이웨이트 (flyweight) 패턴
+* 자주 변하는 속성(또는 외적인 속성, extrinsit)과 변하지 않는 속성(또는 내적인 속성, intrinsit)을 분리하고 `케싱` 재사용하여 메모리 사용을 줄일 수 있다.
+
+![image](https://user-images.githubusercontent.com/60100532/200568408-76c19d4e-f254-4371-ba40-a16b7c2d6d7a.png)
+* 케싱 개념 미리 가지고있다가 필요할때 꺼내 준다 -> 정적 팩토리 메소드 패턴과 유사.
