@@ -236,3 +236,61 @@ public class HelloServiceFactory {
 ___
 ___
 
+
+
+### 정적 팩토리 메서드의 첫번째 단점!!!
+#### - 상속을 하려면 public이나 protected 생성자가 필요하니 정적 팩터리 메서드만 제공하면 하위 클래스를 만들 수 없다.
+* 정적 팩토리 메서드만을 사용하게 만든 클래스가 있다면 그렇게 하기 위해 생성자를 `private`으로 선언해야 한다.
+* 이말은 즉 해당 클래스는 상속을 허용하지 않는다.
+* 하지만 이는 컴포지션(delegate)을 사용하도록 유도해 굳이 상속없이 해당클래스의 내부 기능들을 사용할 수 있다
+* 이점에서 오리혀 장점으로 받아들일 수도 있다.
+
+```java
+public class Settings {
+  private boolean useAutoSteering;
+  private boolean useABS;
+  private Difficulty difficulty;
+  
+  private Settings() {
+  }
+
+  private static final Settings SETTINGS = new Settings();
+  
+  public static Settings newInstance() {
+    return SETTINGS;
+  }
+}
+
+public class AdvancedSettings {
+  Settings settings;
+}
+```
+ 
+* 정적 팩토리 메서드를 제공한다고 해서 꼭 생성자를 `private`으로 만들 필요는 없다.
+* `new ArrayList<>()`, `List.of()`
+
+
+### 정적 팩토리 메서드의 두번째 단점!!!
+#### - 정적 팩토리 메소드는 프로그래머가 찾기 어렵다.
+* 자바독에 메소드는 생성자처럼 API설명에 명확히 드러나지 않는다. 
+* 해당 클래스에 선언된 메소드가 많다면, 정적 팩토리 메소드를 찾기는 더욱 어려워진다.
+* 이단점을 완화 하기 위해 API문서를 잘 작성하고, 정적 팩토리 메소드 이름도 널리 알려진 규약을 따라 짓는다.
+
+
+```java
+/**
+ * 이 클래스의 인스턴스는 #getInstance()를 통해 사용한다.
+ * @see #getInstance()
+ */
+public class Settings {
+  ...
+  private Settings() {
+  }
+
+  private static final Settings SETTINGS = new Settings();
+  
+  public static Settings getInstance() {
+    return SETTINGS;
+  }
+}
+```
