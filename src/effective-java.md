@@ -136,3 +136,153 @@ public class Settings {
 
 ![image](https://user-images.githubusercontent.com/60100532/200568408-76c19d4e-f254-4371-ba40-a16b7c2d6d7a.png)
 * 케싱 개념 미리 가지고있다가 필요할때 꺼내 준다 -> 정적 팩토리 메소드 패턴과 유사.
+
+
+### 아이템 2. 생성자에 매개변수가 많다면 빌더를 고려하라
+* 핵심정리
+  * 정적 팩토리와 생성자에 선택적 매개변수가 많을 때 고려할 수 있는 방안
+    * 대안1: 점층적 생성자 패턴 또는 생성자 체이닝
+      * 매개변수가 늘어나면 클라이언트 코드를 작서하거나 읽기 어렵다.
+    * 대안2:자바빈즈 패턴
+      * 완번한 객체를 만들려면 메서드를 여러번 호출해야한다.(일관성이 무너진 상태가 될 수도 있다.)
+    * 클래스를 불변으로 만들 수 없다. 
+
+
+### 점층적 생성자 패턴
+### Sample Code
+```java
+public class NutritionFacts {
+    private final int servingSize;  // (mL, 1회 제공량)     필수
+    private final int servings;     // (회, 총 n회 제공량)  필수
+    private final int calories;     // (1회 제공량당)       선택
+    private final int fat;          // (g/1회 제공량)       선택
+    private final int sodium;       // (mg/1회 제공량)      선택
+    private final int carbohydrate; // (g/1회 제공량)       선택
+
+    public NutritionFacts(int servingSize, int servings) {
+        this(servingSize, servings, 0);
+//        this.servingSize = servingSize;
+//        this.servings = servings;
+//        this.calories = 0;
+//        this.fat = 0;
+//        this.sodium = 0;
+//        this.carbohydrate = 0;
+    }
+
+    public NutritionFacts(int servingSize, int servings,
+                          int calories) {
+        this(servingSize, servings, calories, 0);
+//        this.servingSize = servingSize;
+//        this.servings = servings;
+//        this.calories = calories;
+//        this.fat = 0;
+//        this.sodium = 0;
+//        this.carbohydrate = 0;
+    }
+
+    public NutritionFacts(int servingSize, int servings,
+                          int calories, int fat) {
+        this(servingSize, servings, calories, fat, 0);
+//        this.servingSize = servingSize;
+//        this.servings = servings;
+//        this.calories = calories;
+//        this.fat = fat;
+//        this.sodium = 0;
+//        this.carbohydrate = 0;
+    }
+
+    public NutritionFacts(int servingSize, int servings,
+                          int calories, int fat, int sodium) {
+        this(servingSize, servings, calories, fat, sodium, 0);
+//        this.servingSize = servingSize;
+//        this.servings = servings;
+//        this.calories = calories;
+//        this.fat = fat;
+//        this.sodium = sodium;
+//        this.carbohydrate = 0;
+    }
+
+    public NutritionFacts(int servingSize, int servings,
+                          int calories, int fat, int sodium, int carbohydrate) {
+        this.servingSize  = servingSize;
+        this.servings     = servings;
+        this.calories     = calories;
+        this.fat          = fat;
+        this.sodium       = sodium;
+        this.carbohydrate = carbohydrate;
+    }
+
+    public static void main(String[] args) {
+        NutritionFacts cocaCola =
+                new NutritionFacts(10, 10);
+    }
+    
+}
+```
+ 
+* 위 코드는 생성자도 많지만 생성자에 넘겨주는 파라미터도 많다.
+* 필수적인 필드값은 객체를 만들때 받아서 만들수있도록 강제하기 위해 생성자에 넘겨주는게 좋다.
+* 위 예시코드처럼 옵셔널한 필드값이 많으면 점층적 생성자 패턴을 고려해보자.
+* 위 코드에서 문제점은 생성자로 받는 필드가 전부 int 값 이다. 즉 생성자로 넘긴값이 어떤 파라미터로 들어가는지 알기 힘들다.
+
+### 자바빈즈 패턴
+### Sample Code
+```java
+public class NutritionFacts {
+    // 필드 (기본값이 있다면) 기본값으로 초기화된다.
+    private int servingSize  = -1; // 필수; 기본값 없음
+    private int servings     = -1; // 필수; 기본값 없음
+    private int calories     = 0;
+    private int fat          = 0;
+    private int sodium       = 0;
+    private int carbohydrate = 0;
+    private boolean healthy;
+
+    public NutritionFacts() { }
+
+    public void setServingSize(int servingSize) {
+        this.servingSize = servingSize;
+    }
+
+    public void setServings(int servings) {
+        this.servings = servings;
+    }
+
+    public void setCalories(int calories) {
+        this.calories = calories;
+    }
+
+    public void setFat(int fat) {
+        this.fat = fat;
+    }
+
+    public void setSodium(int sodium) {
+        this.sodium = sodium;
+    }
+
+    public void setCarbohydrate(int carbohydrate) {
+        this.carbohydrate = carbohydrate;
+    }
+
+    public void setHealthy(boolean healthy) {
+        this.healthy = healthy;
+    }
+
+    public static void main(String[] args) {
+        NutritionFacts cocaCola = new NutritionFacts();
+        cocaCola.setServingSize(240);
+        cocaCola.setServings(8);
+
+        cocaCola.setCalories(100);
+        cocaCola.setSodium(35);
+        cocaCola.setCarbohydrate(27);
+    }
+}
+```
+* 자바빈즈 패턴은 매개변수가 없는 생성자로 객체를 만들 후 Setter를 통해서 원하는 매개변수의 값을 설정하는 방식이다.
+* 이전 점층적 생성자 패턴과 다르게 객체의 생성이 매우 단순해졌다.
+* 점층적 생성자 패턴에서 보였던 단점은 자바빈즈 패턴에서 보이지 않는다.
+* 코드가 길어지긴 했지만 인스턴스를 만들기가 쉬워졌고, 그 결과 코드를 읽기 더 쉬워졌다.
+* 단점은 자바빈즈 패턴에서는 객체 하나를 만드려면 메서드를 여러개 호출해야한다.
+* 또한 필수 필드값을 강제할 수 없어 객체가 완전히 생성되기 전까지 일관성(Consistency)이 무너진 상태에 놓이게 된다.
+* 마지막으로 자바 빈즈 패턴에서는 클래스를 분변으로 만들 수 없다.
