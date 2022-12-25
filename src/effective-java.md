@@ -609,3 +609,24 @@ public class NyPizza extends Pizza {
 * 하위 클래스의 메서드가 상위 클래스의 메서드가 정의한 반환 타입이 아닌,
 * 그 하위타입을 반환하는 기능을 공변 반환 타이핑(covariant return typing)이라 한다.
 * 이 기능을 이용하면 클라이언트가 형변환에 신경 쓰지 않고도 빌더를 사용할 수 있다.
+
+### 자바빈(JavaBean) Page 15
+* Java.beans 패키지 안에 있는 모든 것
+* 자바빈이 지켜야 할 규약
+  * 아규먼트 없는 기본 생성자 
+  * getter와 setter 메소드 이름 규약
+  * Serializable 인터페이스 구현
+* 실제로 오늘날 자바빈 스팩 중에서도 getter와 setter가 주로 쓰이는 이유
+  * JPA나 스프링과 같은 여러 프레임워크에서 리플렉션을 통해 특정 객체의 값을 조회하거나 설정하기 떄문
+  
+### IllegalArgumentException Page 19
+* RuntimeException을 상속받은 unchecked exception중에 하나이다.
+* checked exception & unchecked exception
+  * checked exception이 발생했을때 우리는 2가지 중에 1가지를 해야한다.
+    * 다시 checked exception을 던지거나
+    * try catch 블럭으로 예외처리를 해줘야 한다.
+    * compile time에 체크를 해주기 때문에 컴파일할 수 없다. 
+    * 복구가 가능한 상황에서 checked exception을 던진다 
+  * unchecked exception 프로그램적인 error이고 복구할 수 있는 방법이 없다.
+    * 예외 처리를 하거나할 필요 없다.
+    * 복구가 불가능한 상황에서 unchecked exception을 던진다 
