@@ -509,3 +509,103 @@ public class NutritionFacts {
 * 클라이언트는 필요한 객체를 직접 만드는 대신, 필수 매개변수만으로 생성자를 호출해 빌더 객체를 얻고
 * 그 이후 빌더객체가 제공하는 일종의 세터 메서드 들로 원하는 매개변수들을 설정한다.
 * 마지막으로 매개변수가 없는 build메서드를 호출해 우리가 피룡한 객체를 얻는다.
+
+
+### 계층형 빌더 패턴
+### Sample Code
+```java
+// 코드 2-4 계층적으로 설계된 클래스와 잘 어울리는 빌더 패턴 (19쪽)
+
+// 참고: 여기서 사용한 '시뮬레이트한 셀프 타입(simulated self-type)' 관용구는
+// 빌더뿐 아니라 임의의 유동적인 계층구조를 허용한다.
+
+public abstract class Pizza {
+    public enum Topping { HAM, MUSHROOM, ONION, PEPPER, SAUSAGE }
+    final Set<Topping> toppings;
+
+    abstract static class Builder<T extends Builder<T>> {
+        EnumSet<Topping> toppings = EnumSet.noneOf(Topping.class);
+        public T addTopping(Topping topping) {
+            toppings.add(Objects.requireNonNull(topping));
+            return self();
+        }
+
+        abstract Pizza build();
+
+        // 하위 클래스는 이 메서드를 재정의(overriding)하여
+        // "this"를 반환하도록 해야 한다.
+        protected abstract T self();
+    }
+    
+    Pizza(Builder<?> builder) {
+        toppings = builder.toppings.clone(); // 아이템 50 참조
+    }
+}
+```
+```java
+// 코드 2-6 칼초네 피자 - 계층적 빌더를 활용한 하위 클래스 (20~21쪽)
+public class Calzone extends Pizza {
+    private final boolean sauceInside;
+
+    public static class Builder extends Pizza.Builder<Builder> {
+        private boolean sauceInside = false; // 기본값
+
+        public Builder sauceInside() {
+            sauceInside = true;
+            return this;
+        }
+
+        @Override public Calzone build() {
+            return new Calzone(this);
+        }
+
+        @Override protected Builder self() { return this; }
+    }
+
+    private Calzone(Builder builder) {
+        super(builder);
+        sauceInside = builder.sauceInside;
+    }
+
+    @Override public String toString() {
+        return String.format("%s로 토핑한 칼초네 피자 (소스는 %s에)",
+                toppings, sauceInside ? "안" : "바깥");
+    }
+}
+```
+```java
+// 코드 2-5 뉴욕 피자 - 계층적 빌더를 활용한 하위 클래스 (20쪽)
+public class NyPizza extends Pizza {
+    public enum Size { SMALL, MEDIUM, LARGE }
+    private final Size size;
+
+    public static class Builder extends Pizza.Builder<NyPizza.Builder> {
+        private final Size size;
+
+        public Builder(Size size) {
+            this.size = Objects.requireNonNull(size);
+        }
+
+        @Override public NyPizza build() {
+            return new NyPizza(this);
+        }
+
+        @Override protected Builder self() { return this; }
+    }
+
+    private NyPizza(Builder builder) {
+        super(builder);
+        size = builder.size;
+    }
+
+    @Override public String toString() {
+        return toppings + "로 토핑한 뉴욕 피자";
+    }
+}
+```
+* 각 하위 클래스(NyPizza, Calzone)의 빌더가 정의한 build 메서드는 해당하는 구체 하위 클래스를 반환하도록 언선한다.
+* NyPizza.Builder는 NyPizza를 반환하고, 
+* Calzone.Builder는 Calzone를 반환한다.
+* 하위 클래스의 메서드가 상위 클래스의 메서드가 정의한 반환 타입이 아닌,
+* 그 하위타입을 반환하는 기능을 공변 반환 타이핑(covariant return typing)이라 한다.
+* 이 기능을 이용하면 클라이언트가 형변환에 신경 쓰지 않고도 빌더를 사용할 수 있다.
