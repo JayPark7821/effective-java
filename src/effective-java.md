@@ -630,3 +630,176 @@ public class NyPizza extends Pizza {
   * unchecked exception 프로그램적인 error이고 복구할 수 있는 방법이 없다.
     * 예외 처리를 하거나할 필요 없다.
     * 복구가 불가능한 상황에서 unchecked exception을 던진다 
+
+
+___
+___
+
+### 아이템 3. private 생성자나 열거 타입으로 싱글턴임을 보증하라
+
+### 첫번째 방법 : private 생성자 + public static final 필드
+* 장점 - 간결하고 싱글턴임을 API에 들어낼 수 있다.
+* 단점 1 - 싱글톤을 사용하는 클라이언트를 테스트하기 어려워진다.
+  * 타입을 인터페이스로 정의한 다음 그 인터페이스를 구현해 만든 싱글턴이 아니라면 싱글턴 인스턴스를 가짜(mock) 구현으로 대체할 수 없다.
+* 단점 2 - 리플렉션으로 private 생성자를 호출할 수 있다.
+* 단점 3 - 역직렬화 할 때 새로운 인스턴스가 생길 수 있다.
+
+### Sample Code
+```java
+// 코드 3-1 public static final 필드 방식의 싱글턴 (23쪽)
+public class Elvis implements IElvis, Serializable {
+
+    /**
+     * 싱글톤 오브젝트
+     */
+    public static final Elvis INSTANCE = new Elvis();
+    
+    private Elvis(){}
+  
+    public void leaveTheBuilding() {
+        System.out.println("Whoa baby, I'm outta here!");
+    }
+
+    public void sing() {
+        System.out.println("I'll have a blue~ Christmas without you~");
+    }
+
+    // 이 메서드는 보통 클래스 바깥(다른 클래스)에 작성해야 한다!
+    public static void main(String[] args) {
+        Elvis elvis = Elvis.INSTANCE;
+        elvis.leaveTheBuilding();
+    }
+}
+```
+### 단점 2 - 리플렉션으로 private 생성자를 호출할 수 있다.
+### Sample Code
+```java
+
+// 생성자로 여러 인스턴스 만들기
+public class ElvisReflection {
+
+    public static void main(String[] args) {
+        try {
+            Constructor<Elvis> defaultConstructor = Elvis.class.getDeclaredConstructor();
+            defaultConstructor.setAccessible(true);
+            Elvis elvis1 = defaultConstructor.newInstance();
+            Elvis elvis2 = defaultConstructor.newInstance();
+            Elvis.INSTANCE.sing();
+        } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+}
+```
+### 단점 2 해결 방법
+* 해당 인스턴스에 생성여부 flag를 추가해 private 생성자 호출시 flag값 확인하도록 변경
+```java
+    private static boolean created; // 생성여부 flag 
+
+    private Elvis() {
+        if (created) {
+            throw new UnsupportedOperationException("can't be created by constructor.");
+        }
+
+        created = true;
+    }
+```
+```java
+// 코드 3-1 public static final 필드 방식의 싱글턴 (23쪽)
+public class Elvis implements IElvis, Serializable {
+
+    /**
+     * 싱글톤 오브젝트
+     */
+    public static final Elvis INSTANCE = new Elvis();
+    private static boolean created;
+
+    private Elvis() {
+        if (created) {
+            throw new UnsupportedOperationException("can't be created by constructor.");
+        }
+
+        created = true;
+    }
+
+    public void leaveTheBuilding() {
+        System.out.println("Whoa baby, I'm outta here!");
+    }
+
+    public void sing() {
+        System.out.println("I'll have a blue~ Christmas without you~");
+    }
+
+    // 이 메서드는 보통 클래스 바깥(다른 클래스)에 작성해야 한다!
+    public static void main(String[] args) {
+        Elvis elvis = Elvis.INSTANCE;
+        elvis.leaveTheBuilding();
+    }
+
+    private Object readResolve() {
+        return INSTANCE;
+    }
+
+}
+```
+### 단점 3 - 역직렬화 할 때 새로운 인스턴스가 생길 수 있다.
+```java
+// 역직렬화로 여러 인스턴스 만들기
+public class ElvisSerialization {
+
+    public static void main(String[] args) {
+        try (ObjectOutput out = new ObjectOutputStream(new FileOutputStream("elvis.obj"))) {
+            out.writeObject(Elvis.INSTANCE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try (ObjectInput in = new ObjectInputStream(new FileInputStream("elvis.obj"))) {
+            Elvis elvis3 = (Elvis) in.readObject();
+            System.out.println(elvis3 == Elvis.INSTANCE);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+}
+```
+* 위 코드를 실행하면 ` System.out.println(elvis3 == Elvis.INSTANCE);` false가 출력된다. 즉 
+* 새로운 elvis의 인스턴스가 생성된것이다.
+
+### 단점 3 해결 방법
+* readResolve 메소드를 제공해 해결한다. (역직렬화시 호출됨 (@Override와는 다르다))
+```java
+// 코드 3-1 public static final 필드 방식의 싱글턴 (23쪽)
+public class Elvis implements IElvis, Serializable {
+
+    /**
+     * 싱글톤 오브젝트
+     */
+    public static final Elvis INSTANCE = new Elvis();
+    private static boolean created;
+
+    private Elvis() {
+    }
+
+    public void leaveTheBuilding() {
+        System.out.println("Whoa baby, I'm outta here!");
+    }
+
+    public void sing() {
+        System.out.println("I'll have a blue~ Christmas without you~");
+    }
+
+    // 이 메서드는 보통 클래스 바깥(다른 클래스)에 작성해야 한다!
+    public static void main(String[] args) {
+        Elvis elvis = Elvis.INSTANCE;
+        elvis.leaveTheBuilding();
+    }
+
+    private Object readResolve() {
+        return INSTANCE;
+    }
+
+}
+```
