@@ -528,3 +528,64 @@ public class Person {
 }
 ```
 
+
+### Functional interface
+* 함수형 인터페이스는 추상 메소드가 하나만 있는 인터페이스이다.
+* 함수형 인터페이스는 람다 표현식과 메소드 참조에 대한 "타겟 타입"을 제공
+* 타겟 타입은 변수 할당, 메소드 호출, 타입 변환에 활용할 수 있다.
+* 함수형 인터페이스는 @FunctionalInterface 어노테이션을 사용하여 선언할 수 있다.  
+  
+```java
+public class UsageOfFunctions {
+
+    public static void main(String[] args) {
+        List<LocalDate> dates = new ArrayList<>();
+        dates.add(LocalDate.of(1982, 7, 15));
+        dates.add(LocalDate.of(2011, 3, 2));
+        dates.add(LocalDate.of(2013, 1, 28));
+
+        List<Integer> before2000 = dates.stream()
+                .filter(d -> d.isBefore(LocalDate.of(2000, 1, 1))) // <- Predicate
+                .map(LocalDate::getYear) // <- Function
+                .collect(Collectors.toList());
+    }
+}
+```
+* Predicate와 Function은 java가 기본으로 제공해주는 함수형 인터페이스이다. (모두 java.util.function안에 들어있다.)
+* 기본적으로 Function, Supplier, Consumer, Predicate는 알고 넘어가자
+```java
+public class DefaultFunctions {
+
+    public static void main(String[] args) {
+        Function<Integer, String> intToString = Object::toString;
+
+        Supplier<Person> personSupplier = Person::new;
+        Function<LocalDate, Person> personFunction = Person::new;
+
+        Consumer<Integer> integerConsumer = System.out::println;
+
+        Predicate<Person> predicate;
+    }
+}
+```
+* Function<T,R> : T타입을 받아서 R타입을 반환하는 함수
+
+![image](https://user-images.githubusercontent.com/60100532/209514109-91f3d554-b9b7-4dc3-a330-bb9d0b76e9a1.png)
+
+* Supplier<T> : T타입을 반환하는 함수  
+![image](https://user-images.githubusercontent.com/60100532/209514138-3ee6c26a-969b-4763-be3c-14c8845c94ff.png)
+
+* Consumer<T> : T타입을 받아서 아무것도 반환하지 않는 함수  
+![image](https://user-images.githubusercontent.com/60100532/209514063-32015831-5371-4efd-91dd-d54593e14577.png)
+
+* Predicate<T> : T타입을 받아서 boolean을 반환하는 함수
+![image](https://user-images.githubusercontent.com/60100532/209514187-851474a9-1b49-4f87-9684-9fdb0886f8c8.png)
+
+
+* java가 제공해주는 타입 말고 직접 구현이 필요하다면 아래와 같이 구현할 수 있다.
+```java
+@FunctionalInterface
+public interface MyFunction<T, R> {
+    R apply(T t);
+}
+```
