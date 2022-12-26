@@ -378,3 +378,153 @@ public class EnumElvisSerialization {
     }
 }
 ```
+
+---  
+
+---  
+
+### Method Reference
+* 메소드 참조는 람다 표현식의 축약형이다.
+```java
+public class Person {
+
+    LocalDate birthday;
+
+
+    public Person(LocalDate birthday) {
+      this.birthday = birthday;
+    }
+  
+    public int getAge() {
+      return LocalDate.now().getYear() - birthday.getYear();
+    }
+    
+    public static int compareByAge(Person a, Person b) {
+        return a.birthday.compareTo(b.birthday);
+    }
+
+    public static void main(String[] args) {
+        List<Person> people = new ArrayList<>();
+        people.add(new Person(LocalDate.of(1982, 7, 15)));
+        people.add(new Person(LocalDate.of(2011, 3, 2)));
+        people.add(new Person(LocalDate.of(2013, 1, 28)));
+
+        people.sort(new Comparator<Person>() {
+            @Override
+            public int compare(Person a, Person b) {
+                return a.birthday.compareTo(b.birthday);
+            }
+        });
+        
+        people.sort((a, b) -> a.birthday.compareTo(b.birthday));
+    }
+
+}
+```
+
+#### Java8 이전 익명 내부 클래스
+```java
+new Comparator<Person>() {
+            @Override
+            public int compare(Person a, Person b) {
+                return a.birthday.compareTo(b.birthday);
+            }
+        }
+```
+#### Java8 이후 람다 표현식
+```java
+people.sort((a, b) -> a.birthday.compareTo(b.birthday));
+```
+* 람다 표현식에서 해야하는 일이 단순하게 메소드호출 하나라면
+* 메소드 레퍼런스로 축약할 수 있다.
+```java
+people.sort(Person::compareByAge);
+```
+
+### Method Reference 종류
+1. 정적 메소드 레퍼런스 static method reference
+```java
+public class Person {
+  ...
+  
+    public static int compareByAge(Person a, Person b) {
+        return a.birthday.compareTo(b.birthday);
+    }
+
+    public static void main(String[] args) {
+      ...
+      people.sort(Person::compareByAge);
+    }
+
+}
+```
+* static 메소드 compareByAge를 참조하는 static method reference
+```java
+people.sort(Person::compareByAge);
+```
+  
+<br />  
+
+2. instance method reference
+```java
+public class Person {
+  ...
+  
+    public int compareByAge(Person a, Person b) {
+        return a.birthday.compareTo(b.birthday);
+    }
+
+    public static void main(String[] args) {
+      ...
+        Person person = new Person();
+        people.sort(person::compareByAge);
+    }
+
+}
+```
+* 인스턴스 메소드는 당연히 인스턴스를 통해서 접근해야하기 때문에 
+* Person person = new Person() 를 통해 인스턴스를 생성해한뒤 생성한 person의 compareByAge 메소드를 참조한다.
+```java
+people.sort(person::compareByAge);
+```
+
+<br />  
+
+3. 임의 객체의 인스턴스 메소드 레퍼런스
+* 임의 객체의 메소드 레퍼런스는 첫번째 인자가 자기 자신이 된다.
+```java
+public class Person {
+  ...
+  
+    public int compareByAge(Person a, Person b) {
+        return this.birthday.compareTo(b.birthday);
+    }
+
+    public static void main(String[] args) {
+      ...
+        people.sort(Person::compareByAge);
+    }
+
+}
+```
+
+<br />  
+
+4. 생성자 메소드 레퍼런스
+```java
+public class Person {
+    public Person(LocalDate birthday) {
+      this.birthday = birthday;
+    }
+    
+    public static void main(String[] args) {
+        List<LocalDate> dates = new ArrayList<>();
+        dates.add(LocalDate.of(1982, 7, 15));
+        dates.add(LocalDate.of(1982, 7, 15));
+        dates.add(LocalDate.of(1982, 7, 15));
+        dates.add(LocalDate.of(1982, 7, 15));
+        dates.stream().map(Person::new).collect(Collectors.toList());
+    }
+}
+```
+
