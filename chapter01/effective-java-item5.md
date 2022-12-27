@@ -90,6 +90,110 @@ public class SpellChecker {
 * (Dictionary가 interface라는 가정일때)
 * 위 방법을 사용하면 테스트하기도 편해진다.
 
+
+### 이 패턴의 쓸만한 변형으로 생성자에 자원 팩터리를 넘겨주는 방식이 있다 Page 29
+```java
+public class SpellChecker {
+
+    private Dictionary dictionary;
+
+    public SpellChecker(DictionaryFactory dictionaryFactory) {
+        this.dictionary = dictionaryFactory.getDictionary();
+    }
+
+    public boolean isValid(String word) {
+        // TODO 여기 SpellChecker 코드
+        return dictionary.contains(word);
+    }
+
+    public List<String> suggestions(String typo) {
+        // TODO 여기 SpellChecker 코드
+        return dictionary.closeWordsTo(typo);
+    }
+
+}
+```
+```java
+public interface DictionaryFactory {
+
+    Dictionary getDictionary();
+
+}
+```
+
+### 자바 8에서 소개한 Supplier<T> 인터페이스가 팩토리를 표현한 완벽한 예다 Page 29
+```java
+public class SpellChecker {
+
+	private Dictionary dictionary;
+
+	public SpellChecker(Supplier<Dictionary> dictionarySupplier) {
+		this.dictionary = dictionarySupplier.get();
+	}
+}
+```
+```java
+public class SpellCheckerTest {
+    @Test
+    public void test() {
+        SpellChecker spellChecker = new SpellChecker(DefaultDictionary::new);
+    }
+}
+```
+
+### 한정적 와일드카드 타입을 사용해 팩토리의 타입 매개변수를 제한해야 한다.
+```java
+public class SpellChecker {
+
+	private Dictionary dictionary;
+
+	public SpellChecker(Supplier<? extends Dictionary> dictionarySupplier) {
+		this.dictionary = dictionarySupplier.get();
+	}
+}
+```
+
+### 팩토리 메소드 패턴 p29
+![image](https://user-images.githubusercontent.com/60100532/190903173-7ec46333-296f-41b2-ae55-c505463cb130.png)
+#### client code
+```java
+public class SpellChecker {
+
+    private Dictionary dictionary;
+
+    public SpellChecker(DictionaryFactory dictionaryFactory) {
+        this.dictionary = dictionaryFactory.getDictionary();
+    }
+    ...
+}
+```
+#### DictionaryFactory (interface)
+```java
+public interface DictionaryFactory {
+
+    Dictionary getDictionary();
+
+}
+```
+#### DefaultDictionaryFactory (class)
+```java
+public class DefaultDictionaryFactory implements DictionaryFactory {
+    @Override
+    public Dictionary getDictionary() {
+        return new DefaultDictionary();
+    }
+}
+```
+
+### 스프링 IOC p30
+* IoC(Inversion of Control) : 제어의 역전
+  * 자기 코드에 대한 제어권을 자기 자신이 가지고 있지 않고 위부에서 제어하는 경우
+  * 제어권? 인스턴스를 만들거나, 어떤 메소드를 실행하거나, 필요로하는 의존성을 주입받는등...
+* 스프링Ioc컨터이너 사용 장점
+  * 수많은 개발자에게 검증되었으며 자바 표준 스팩(@inject)도 지원한다.
+  * 손쉽게 싱글톤 Scope을 사용할 수 있다.
+  * 객체 생성(Bean) 관련 라이프사이클 인터페이스를 제공한다.
+
 > 핵심정리
 > * 클래스가 내부적으로 하나 이상의 자원에 의존하고, 그 자우너이 클래스 동작에 영향을 준다면 싱글턴과 정적 유틸리티 클래스는 사용하지 않는 것이 좋다.  
 >   이 자원들을 클래스가 직접 만들게 해서도 안 된다.  
