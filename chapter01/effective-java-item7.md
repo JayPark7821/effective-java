@@ -262,6 +262,118 @@ public class PhantomReferenceExample {
 }
 ```
 
+### 백그라운드 쓰레드, ScheduledThreadPoolExecutor p39
+```java
+public class ExecutorsExample {
+
+  public static void main(String[] args) {
+    Thread thread = new Thread(new Task());
+	thread.start();
+
+    System.out.println(Thread.currentThread() + " hello");
+  }
+  
+  static class Task implements Runnable {
+    @Override
+    public void run() {
+		try{
+			Thread.sleep(2000L);
+        }catch (InterruptedException e){
+          System.out.println(Thread.currentThread() + " world");
+        }
+    }
+  }
+}
+
+/**
+ * Thread[main,5,main] hello
+ * Thread[Thread-0,5,main] world
+ */
+
+```
+* Thread를 만드는 작업은 시스템 리소스를 많이 잡아먹는다.
+* 때문에 아래 코드와 같이 여러 Thread가 필요하다고 여러 Thread를 만드는 작업은 비효율적이다.
+```java
+for(int i = 0; i < 100; i++){
+  Thread thread = new Thread(new Task());
+  thread.start();
+}
+```
+
+* 이럴때 Executors의 ThreadPool을 사용하면 된다.
+* newFixedThreadPool()
+* 내부적으로 blockingQueue를 사용한다. concurrent하게 데이터 접근 가능
+```java
+ExecutorService service = Executors.newFixedThreadPool(10);
+for(int i = 0; i < 100; i++){
+    service.execute(new Task());
+}
+
+service.shutdown();
+```
+* ThreadPool의 개수를 조정할때 cpu Intensive한지 I/O Intensive한지에 따라서 조정해야한다.
+* 만약 cpu Intensive한 작업이라면 cpu의 코어 수보다 많은 쓰레드를 할당해봤자 성능이 좋아지지 않는다. 
+* I/O Intensive한 작업이라면 cpu의 코어 수보다 많은 쓰레드를 할당해야한다. (왜냐하면 cpu는 I/O를 기다리는 시간을 활용할 수 없기 때문이다.)
+```java
+int numberOfCore = Runtime.getRuntime().availableProcessors();
+```
+
+* newCachedThreadPool()
+  * 필요한 만큼 Thread를 만들고, 놀고있는 Thread가 있다면 재사용하고, 사용하지 않는 Thread는 60초 후에 제거한다.
+  * 즉, Thread를 계속 만들고 제거하는 작업을 반복한다.
+  * 작업을 위한 공간이 딱 1개이다. task queue가 1개
+  * task queue에 task가 들어오자마자 thread에게 할당하는데 이때 thread가 없다면 새로 만들어서 할당한다.
+  * thread가 계속 늘어날 수 있다.
+
+* newSingleThreadExecutor()
+  * Thread를 하나만 만들어서 작업을 순차적으로 처리한다.
+
+* newScheduledThreadPool()
+  * 일정 시간이 지난 후에 task를 실행하거나, 주기적으로 task를 실행할 수 있다.
+
+#### Runnable
+* Runnable은 return type이 없는 task를 실행하는 코드를 담고있다.
+```java
+public class Task implements Runnable {
+	
+  @Override
+  public void run() {
+    try{
+      Thread.sleep(2000L);
+    }catch (InterruptedException e){
+      System.out.println(Thread.currentThread() + " world");
+    }
+  }
+}
+```
+
+#### Callable
+* Callable은 return type이 있는 task를 실행하는 코드를 담고있다.
+
+```java
+import java.util.concurrent.Future;
+
+public class ExecutorsExample {
+
+  public static void main(String[] args) {
+    ExecutorService service = Executors.newFixedThreadPool(10);
+    Future<String> submit = service.submit(new Task()); // non-blocking
+    System.out.println(Thread.currentThread() + " hello");
+    System.out.println(submit.get()); // blocking
+	service.shutdown();
+  }
+
+  static class Task implements Callable<String> {
+
+    @Override
+    public String call() throws Exception {
+		Thread.sleep(2000L);
+        return Thread.currentThread() + " world";
+    }
+  }
+}
+```
+
 
 > 핵심정리
 > * 메모리 누수는 겉으로 잘 드러나지 않아 시스템에 수년간 잠복하는 사례도 있다. 이런 누수는 철저한 코드 리뷰나 힙 프로파일러 같은 디버깅 도구를 동원해야만 발견되기도 한다. 그래서 이런 종류의 문제는 예방법을 익혀두는 것이 매우 중요하다.
