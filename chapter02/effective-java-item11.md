@@ -150,3 +150,10 @@ System.out.println(s);
     }
 
 ```
+
+### hashMap 내부 Linked List
+* 자바8 이전 까지는 linked list가 사용되었다. 
+* 자바에서 제공하는 linked list가 아닌 hashMap 내부에 구현체가 따로있다. 
+* 자바8에서 최적화가 되었다.
+* 하나의 버켓에 쌓여있는 데이터가 8개가 넘어가면
+* linked list가 아닌 binary tree로 구현된다. 자세히는 red-black tree
