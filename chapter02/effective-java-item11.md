@@ -98,3 +98,55 @@ System.out.println(s);
 * hash 버켓은 linked list로 구현되어있다 
 * 즉 같은 hash값이라면 같은 버킷에 linked list로 계속 추가되기 때문에
 * hash collision이 발생하면 linked list가 길어지기 때문에 성능이 저하된다.
+
+### 핵심정리 - hashCode 구현방법
+* 핵심 필드 하나의 값의 해쉬값을 계산해서 result 값을 초기화 한다.
+* 기본 타입은 Type.hashCode
+* 참조 타입은 해당 필드의 hashCode
+* 배열은 모든 우너소를 재귀적으로 위의 로직을 적용하거나 Arrays.hashCode
+* result = 31 * result + 해당 필드의 hashCode계산값
+* result를 반환한다.
+
+### 전형적인 hashCode 메서드
+```java
+    // 코드 11-2 전형적인 hashCode 메서드 (70쪽)
+   @Override public int hashCode() {
+       int result = Short.hashCode(areaCode); // 1
+       result = 31 * result + Short.hashCode(prefix); // 2
+       result = 31 * result + Short.hashCode(lineNum); // 3
+       return result;
+   }
+```
+* 가장 핵심 필드중에 하나는 선택 (areaCode)
+* 그 핵심 필드의 해쉬값을 구한다. 
+* primitive type은 wrapper 타입의 hashCode를 사용한다.
+* reference는 해당 필드의 hashCode를 사용한다.
+ 
+
+```java
+    // 코드 11-3 한 줄짜리 hashCode 메서드 - 성능이 살짝 아쉽다. (71쪽)
+   @Override public int hashCode() {
+       return Objects.hash(lineNum, prefix, areaCode);
+   }
+
+```
+
+```java
+
+    // 해시코드를 지연 초기화하는 hashCode 메서드 - 스레드 안정성까지 고려해야 한다. (71쪽)
+    private volatile int hashCode; // 자동으로 0으로 초기화된다.
+
+    @Override public int hashCode() {
+        int result = hashCode;
+		
+        if (result == 0) {
+            result = Short.hashCode(areaCode);
+            result = 31 * result + Short.hashCode(prefix);
+            result = 31 * result + Short.hashCode(lineNum);
+            this.hashCode = result;
+        }
+        return result;
+        
+    }
+
+```
