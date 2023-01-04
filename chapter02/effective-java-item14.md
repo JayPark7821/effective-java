@@ -61,7 +61,118 @@ public class CompareToConvention {
 * 기존 클래스를 확장하고 필드를 추가하는 경우 compareTo 규약을 지킬 수 없다.
 * Composition을 활용할 것.
 
+```java
+// PhoneNumber를 비교할 수 있게 만든다. (91-92쪽)
+public final class PhoneNumber implements Cloneable, Comparable<PhoneNumber> {
+    private final short areaCode, prefix, lineNum;
+ 
+    ...
+  
+    // 코드 14-2 기본 타입 필드가 여럿일 때의 비교자 (91쪽)
+    @Override
+    public int compareTo(PhoneNumber pn) {
+        int result = Short.compare(areaCode, pn.areaCode);
+        if (result == 0)  {
+            result = Short.compare(prefix, pn.prefix);
+            if (result == 0)
+                result = Short.compare(lineNum, pn.lineNum);
+        }
+        return result;
+    }
+}
+```
 
+### 만약에 상속을 받았다면?!!!
+```java
+public class Point implements Comparable<Point>{
+
+    final int x, y;
+ 
+    @Override
+    public int compareTo(Point point) {
+        int result = Integer.compare(this.x, point.x);
+        if (result == 0) {
+            result = Integer.compare(this.y, point.y);
+        }
+        return result;
+    }
+}
+```
+
+### 상속을 통해 구현하는 방법은 추천하지 않는다.!!!
+```java
+public class NamedPoint extends Point {
+
+    final private String name;
+
+    public NamedPoint(int x, int y, String name) {
+        super(x, y);
+        this.name = name;
+    }
+
+	@Override
+	public String toString() {
+		return "NamedPoint{" +
+			"name='" + name + '\'' +
+			", x=" + x +
+			", y=" + y +
+			'}';
+	}
+	
+    public static void main(String[] args) {
+        NamedPoint p1 = new NamedPoint(1, 0, "keesun");
+        NamedPoint p2 = new NamedPoint(1, 0, "whiteship");
+
+        Set<NamedPoint> points = new TreeSet<>(new Comparator<NamedPoint>() {
+            @Override
+            public int compare(NamedPoint p1, NamedPoint p2) {
+                int result = Integer.compare(p1.getX(), p2.getX());
+                if (result == 0) {
+                    result = Integer.compare(p1.getY(), p2.getY());
+                }
+                if (result == 0) {
+                    result = p1.name.compareTo(p2.name);
+                }
+                return result;
+            }
+        });
+
+        points.add(p1);
+        points.add(p2);
+
+        System.out.println(points);
+    }
+
+}
+```
+
+### Composition을 통해 해결해 보자.
+
+```java
+public class NamedPoint implements Comparable<NamedPoint> {
+
+    private final Point point;
+    private final String name;
+
+    public NamedPoint(Point point, String name) {
+        this.point = point;
+        this.name = name;
+    }
+
+    public Point getPoint() {
+        return this.point;
+    }
+
+    @Override
+    public int compareTo(NamedPoint namedPoint) {
+        int result = this.point.compareTo(namedPoint.point);
+        if (result == 0) {
+            result = this.name.compareTo(namedPoint.name);
+        }
+        return result;
+    }
+}
+```
 
 ### 핵심정리 - CompareTo 구현 방법 2
 * 자바 8부터 함수형 인터페이스, 람다, 메서드 레퍼런스와 Comprator가 제공하는   
