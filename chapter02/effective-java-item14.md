@@ -181,3 +181,39 @@ public class NamedPoint implements Comparable<NamedPoint> {
   * Comparator의 static 메서드를 사용해서 Comparator 인스턴스 만들기
   * 인스턴스를 만들었다면 default 메서드를 사용해서 메서드 호출 이어가기 (체이닝)
   * static 메서드와 default 메소드의 매개변수로는 람다 표현식 또는 메서드 레퍼런스를 사용할 수 있다.
+
+
+```java
+
+public final class PhoneNumber implements Cloneable, Comparable<PhoneNumber> {
+	private final short areaCode, prefix, lineNum;
+ 
+    ...
+
+	// 코드 14-2 기본 타입 필드가 여럿일 때의 비교자 (91쪽)
+	// @Override
+	// public int compareTo(PhoneNumber pn) {
+	// 	int result = Short.compare(areaCode, pn.areaCode);
+	// 	if (result == 0)  {
+	// 		result = Short.compare(prefix, pn.prefix);
+	// 		if (result == 0)
+	// 			result = Short.compare(lineNum, pn.lineNum);
+	// 	}
+	// 	return result;
+	// }
+
+	// 코드 14-3 비교자 생성 메서드를 활용한 비교자 (92쪽)
+	private static final Comparator<PhoneNumber> COMPARATOR =
+		comparingInt((PhoneNumber pn) -> pn.areaCode)
+			.thenComparingInt(pn -> pn.getPrefix())
+			.thenComparingInt(pn -> pn.lineNum);
+
+	   @Override
+	   public int compareTo(PhoneNumber pn) {
+	       return COMPARATOR.compare(this, pn);
+	   }
+	
+}
+
+
+```
