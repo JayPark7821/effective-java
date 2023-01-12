@@ -114,8 +114,34 @@ public final class Person {
   * 불변 객체는 근본적으로 스레드 안전하여 따로 동기화할 필요 없다.
   * 불변 객체는 안심하고 공유할 수 있다. ( 상수, public static final)
   * 불변 객체 끼리는 내부 데이터를 공유할 수 있다.
-  * 객체를 만들 때 불변 객체로 구헝하면 이점이 많다.
+  * 객체를 만들 때 불변 객체로 구현하면 이점이 많다.
   * 실패 원자성을 제공한다.
 * 단점 
   * 값이 다르다면 반드시 별도의 객체로 만들어야 한다.
   * "다단계 연산"을 제공하거나. "가변 동반 클래스"를 제공하여 대처할 수 있다.
+
+
+### 불변 객체 끼리는 내부 데이터를 공유할 수 있다.
+![image](https://user-images.githubusercontent.com/60100532/212084591-ffdaff14-c174-4499-906a-be9d7c017a97.png)
+```java
+public class BigIntExample {
+
+  public static void main(String[] args) {
+    BigInteger ten = BigInteger.TEN;
+    BigInteger minusTen = ten.negate();
+  }
+}
+```
+###  "가변 동반 클래스"를 제공하여 대처할 수 있다.
+```java
+public class StringExample {
+
+    public static void main(String[] args) {
+        String name = "whiteship";
+
+        StringBuilder nameBuilder = new StringBuilder(name);
+        nameBuilder.append("keesun");
+    }
+}
+
+```
