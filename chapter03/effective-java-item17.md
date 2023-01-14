@@ -164,3 +164,11 @@ public class StringExample {
   * 메모리 모델이 허용하는 범위내에서 프로그램을 어떻게 실행하든 규현체(JVM)의 자유다. (이 과정에서 실행 순서가 바뀔 수도 있다.)
 * 어떤 인스턴스의 final 변수를 초기화 하기 전까지 해당 인스턴스를 참조하는 모든 쓰레드는 기다려야 한다.(Freeze)
 
+### java.util.concurrent 패키지의 CountDownLatch 클래스
+* 병행(Concurrency)프로그래밍에 유용하게 사용할 수 있는 유틸리티 묶음
+  * 병행(Concurrency)과 병렬(Parellel) 프로그래밍의 차이
+    * 병행은 여러 작업을 번갈아 가며 실행해 마치 동시에 여러 작업을 처리하듯 보이지만. 실제로는 한번에 오직 한 작업만 실행한다.
+      ![image](https://user-images.githubusercontent.com/60100532/212477551-5b5c4087-03bc-4b73-867c-f4fb56c143f4.png)
+    * 병렬은 여러 작업을 동시에 처리한다. CPU가 여러개 있어야 가능하다.
+    * 자바의 concurrent 패키지는 병행 애플리케이션에 유용한 다양한 툴을 제공한다.
+    * BlockingQueue, Callable, ConcurrrentMap, Executor, ExecutorService, Future,
