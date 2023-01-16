@@ -109,3 +109,122 @@ public class ForwardingSet<E> implements Set<E> {
 ```
 * addAll을 호출했을때 add라는 메소드가 Override되어있기 때문에 오버라이드한 add라는 메소드에서 addCount++을 하기때문에 6이 나왔지만
 * 컴포지션을 사용한 전달 클래스에서는 단순하게 addAll을 호출하고있기 때문에 3이 나온다.
+
+
+
+### 데코레이터 패턴 p119
+* 상속이 아닌 위임을 사용해서 보다 유연하게 부가 기능을 추가 가능
+
+![image](https://user-images.githubusercontent.com/60100532/192908078-37bd9aa2-38d9-4d83-9ee7-5b9507d0cd09.png)
+
+### 콜백 프레임워크와 셀프 문제
+* 콜백 프레임워크와 래퍼를 같이 사용했을 때 발생할 수 있는 문제
+  * 콜백 함수: 다른 함수(A)의 인자로 전달된 함수(B)로, 해당 함수(A) 내부에서 필요
+    한 시점에 호출 될 수는 함수 (B)를 말한다.
+  * 래퍼로 감싸고 있는 내부 객체가 어떤 클래스(A)의 콜백으로(B) 사용되는 경우에
+    this를 전달한다면, 해당 클래스(A)는 래퍼가 아닌 내부 객체를 호출한다. (SELF 문제)
+
+### Sample Code
+```java
+interface FunctionToCall {
+
+    void call();
+
+    void run();
+}
+
+```
+
+```java
+class BobFunction implements FunctionToCall {
+
+    private final Service service;
+
+    public BobFunction(Service service) {
+        this.service = service;
+    }
+
+    @Override
+    public void call() {
+        System.out.println("밥을 먹을까..");
+    }
+
+    @Override
+    public void run() {
+        this.service.run(this);
+    }
+}
+
+```
+```java
+public class Service {
+
+    public void run(FunctionToCall functionToCall) {
+        System.out.println("뭐 좀 하다가...");
+        functionToCall.call();
+    }
+
+    public static void main(String[] args) {
+        Service service = new Service();
+        BobFunction bobFunction = new BobFunction(service);
+		bobFunction.run();
+    }
+}
+
+```
+* 실행 결과
+* 뭐 좀 하다가...
+* 밥을 먹을까..
+
+### 위 코드에 BobFunctionWrapper를 추가해 보자.
+```java
+public class BobFunctionWrapper implements FunctionToCall {
+
+    private final BobFunction bobFunction;
+
+    public BobFunctionWrapper(BobFunction bobFunction) {
+        this.bobFunction = bobFunction;
+    }
+
+    @Override
+    public void call() {
+        this.bobFunction.call();
+        System.out.println("커피도 마실까...");
+    }
+
+    @Override
+    public void run() {
+        this.bobFunction.run();
+    }
+}
+```
+```java
+public class Service {
+
+    public void run(FunctionToCall functionToCall) {
+        System.out.println("뭐 좀 하다가...");
+        functionToCall.call();
+    }
+
+    public static void main(String[] args) {
+        Service service = new Service();
+        BobFunction bobFunction = new BobFunction(service);
+        BobFunctionWrapper bobFunctionWrapper = new BobFunctionWrapper(bobFunction);
+        bobFunctionWrapper.run();
+    }
+}
+
+```
+
+
+* BobFunctionWrapper를 추가하고 실행하면 어떠한 결과가 나올까?
+* 뭐 좀 하다가...
+* 밥을 먹을까..
+* 커피도 마실까...
+* 라고 출력 될까?
+* 정답은 아니다.
+
+* bobFunctionWrapper.run()을 호출하면, 
+* bobFunctionWrapper의 run()이 호출되고, 
+* bobFunctionWrapper의 run()에서는 bobFunction의 run()을 호출한다.
+* bobFunction의 run()에서는 bobFunction의 call()을 호출한다.
