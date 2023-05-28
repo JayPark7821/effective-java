@@ -254,3 +254,14 @@ public class Client {
 ```
 
 * 스프링에서 템플릿 콜백 패턴을 사용하는 예 ) JdbcTemplate, RestTemplate
+  
+--- 
+### 디폴트 메소드와 Object 메서드
+* 인터페이스의 디폴트 메소드로 Object 메소드를 재정의 할 수 없는 이유
+  * 디폴트 메소드 핵심 목적은 '인터페이스의 진화'
+  * 두 가지 규칙만 유지한다.
+    * "클래스보다 인터페이스를 우선시 한다."
+    * "더 구체적인 인터페이스가 우선시 된다."
+  * 불안정하다.  
+  
+![image](https://github.com/JayPark7821/effective-java/assets/60100532/d9a918e5-5a18-4867-aedf-5dd7a9cc4e52)
