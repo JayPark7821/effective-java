@@ -165,3 +165,92 @@ public class MyCat extends AbstractCat implements Flyable {
 	}
 }
 ```
+
+
+### 템플릿 메소드 패턴
+* 알고리즘 구조를 서브 클래스가 확장할 수 있도록 템플릿으로 제공하는 방법
+* 추상 클래스는 템플릿을 제공하고 하위 클래스는 구체적인 알고리즘 제공  
+  ![image](https://user-images.githubusercontent.com/60100532/205218720-352209e3-e659-450d-852b-a9b687fc960e.png)
+
+```java
+public abstract class FileProcessor {
+
+  private String path;
+  public FileProcessor(String path) {
+    this.path = path;
+  }
+
+  public final int process() {
+    try(BufferedReader reader = new BufferedReader(new FileReader(path))) {
+      int result = 0;
+      String line = null;
+      while((line = reader.readLine()) != null) {
+        result = getResult(result, Integer.parseInt(line));
+      }
+      return result;
+    } catch (IOException e) {
+      throw new IllegalArgumentException(path + "에 해당하는 파일이 없습니다.", e);
+    }
+  }
+
+  protected abstract int getResult(int result, int number);
+
+}
+```
+
+```java
+public class Plus extends FileProcessor {
+    public Plus(String path) {
+        super(path);
+    }
+
+    @Override
+    protected int getResult(int result, int number) {
+        return result + number;
+    }
+
+}
+
+```
+
+* 템플릿 콜백 패턴
+```java
+ public  class FileProcessor {
+
+	private String path;
+	public FileProcessor(String path) {
+		this.path = path;
+	}
+
+	public final int process(BiFunction<Integer, Integer, Integer> operator) {
+		try(BufferedReader reader = new BufferedReader(new FileReader(path))) {
+			int result = 0;
+			String line = null;
+			while((line = reader.readLine()) != null) {
+				result = operator.apply(result, Integer.parseInt(line));
+			}
+			return result;
+		} catch (IOException e) {
+			throw new IllegalArgumentException(path + "에 해당하는 파일이 없습니다.", e);
+		}
+	}
+
+	// protected abstract int getResult(int result, int number);
+
+}
+
+```
+
+```java
+
+public class Client {
+
+    public static void main(String[] args) {
+        FileProcessor fileProcessor = new Plus("number.txt");
+        System.out.println(fileProcessor.process((a,b) -> a + b));
+    }
+}
+
+```
+
+* 스프링에서 템플릿 콜백 패턴을 사용하는 예 ) JdbcTemplate, RestTemplate
