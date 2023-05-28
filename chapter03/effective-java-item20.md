@@ -11,7 +11,37 @@
 * 계층구조가 없는 타입 프레임워크를 만들 수 있다.
 * 래퍼 클래스와 함께 사용하면 인터페이스는 기능을 향상 시키는 안전하고 강력한 수단이 된다. (아이템 18)
 * 구현이 명백한 것은 인터페이스의 디폴트 메서드를 사용해 프로그래머의 일감을 덜어 줄 수 있다
-                                                                
+                               
+```java
+/*
+ * default method example
+ */
+
+public interface TimeClient {
+
+	void setTime(int hour, int minute, int second);
+	void setDate(int day, int month, int year);
+	void setDateAndTime(int day, int month, int year,
+		int hour, int minute, int second);
+	LocalDateTime getLocalDateTime();
+
+	static ZoneId getZonedId(String zoneString) {
+		try {
+			return ZoneId.of(zoneString);
+		} catch (DateTimeException e) {
+			System.err.println("Invalid time zone: " + zoneString + "; using default time zone instead.");
+			return ZoneId.systemDefault();
+		}
+	}
+
+	default ZonedDateTime getZonedDateTime(String zoneString) {
+		return ZonedDateTime.of(getLocalDateTime(), getZonedId(zoneString));
+	}
+}
+```
+
+* default 메소드 추가로 기존 인터페이스를 구현한 클래스들의 컴파일 에러를 발생시키지 않고 기능을 추가할 수 있다.
+                                 
 ### 핵심정리 - 인터페이스와 추상 골격(skeletal) 클래스
 * 인터페이스와 추상 클래스의 장점을 모두 취할 수 있다.
  * 인터페이스 - 디폴트 메서드 구현
