@@ -49,3 +49,119 @@ public interface TimeClient {
  * 템플릿 메서드 패턴
 * 다중 상속을 시뮬레이트할 수 있다.
 * 골격 구현은 상속용 클래스이기 때문에 아이템 19를 따라야 한다
+
+```java
+public class IntArrays {
+	static List<Integer> intArrayAsList(int[] a) {
+		Objects.requireNonNull(a);
+		return new List<>();
+	}
+}
+```  
+![image](https://github.com/JayPark7821/effective-java/assets/60100532/5397bb52-5381-4197-9bfd-ae01609fc1c8)
+
+```java	
+static List<Integer> intArrayAsList(int[] a) {
+		Objects.requireNonNull(a);
+ 
+		return new AbstractList<>() {
+			@Override public Integer get(int i) {
+				return a[i];  // 오토박싱(아이템 6)
+			}
+
+			@Override public Integer set(int i, Integer val) {
+				int oldVal = a[i];
+				a[i] = val;     // 오토언박싱
+				return oldVal;  // 오토박싱
+			}
+
+			@Override public int size() {
+				return a.length;
+			}
+		};
+	}
+```  
+* 다중 상속 example  
+```java
+public abstract class AbstractCat {
+
+    protected abstract String sound();
+
+    protected abstract String name();
+}
+
+```
+```java
+public class MyCat extends AbstractCat   {
+	
+	@Override
+	protected String sound() {
+		return "인싸 고양이 두 마리가 나가신다!";
+	}
+
+	@Override
+	protected String name() {
+		return "유미";
+	}
+
+	public static void main(String[] args) {
+		MyCat myCat = new MyCat();
+		System.out.println(myCat.sound());
+		System.out.println(myCat.name()); 
+	}
+}
+```
+
+* 위와같은 상황에서 상속을 하나 더 받고 싶다면??
+* 인터페이스를 활용하여 다중 상속을 시뮬레이트 할 수 있다.
+```java
+public interface Flyable {
+
+    void fly();
+}
+```
+
+```java
+public class AbstractFlyable implements Flyable {
+
+	@Override
+	public void fly() {
+		System.out.println("너랑 딱 붙어있을게!");
+	}
+}
+```
+```java
+public class MyCat extends AbstractCat implements Flyable {
+
+	private MyFlyable myFlyable = new MyFlyable();
+
+	@Override
+	protected String sound() {
+		return "인싸 고양이 두 마리가 나가신다!";
+	}
+
+	@Override
+	protected String name() {
+		return "유미";
+	}
+
+	public static void main(String[] args) {
+		MyCat myCat = new MyCat();
+		System.out.println(myCat.sound());
+		System.out.println(myCat.name());
+		myCat.fly();
+	}
+
+	@Override
+	public void fly() {
+		this.myFlyable.fly();
+	}
+
+	private class MyFlyable extends AbstractFlyable {
+		@Override
+		public void fly() {
+			System.out.println("날아라.");
+		}
+	}
+}
+```
