@@ -268,3 +268,5 @@ public class Client {
 * Object의 toString을 사용해야하나 아니면 인터페이스에 재정의된 toString을 사용해야하나?
 * 심지어 인터페이스는 필드를 가질수없는데 ...... toString, hashCode, equals는 구현할 이유가???
 ![image](https://github.com/JayPark7821/effective-java/assets/60100532/d9a918e5-5a18-4867-aedf-5dd7a9cc4e52)
+
+
