@@ -75,3 +75,36 @@ public class SubClass extends SuperClass implements MarkerInterface {
 * 만약 hello 라는 디폴트 메소드가 MarkerInterface에 정의되어 있지 않았다면 SuperClass의 hello 메소드를 호출할 수 없다. private 이기때문에
 * 하지만 MarkerInterface에 hello 메소드가 정의되어 있기 때문에 개발자는 인터페이스의 디폴트 메소드를 호출하길 원해 hello메소드를 호출했지만
 * 위 와같은 에러가 발생한다. 
+
+
+* ConcurrentModificationException
+* https://docs.oracle.com/javase/8/docs/api/java/util/ConcurrentModificationException.html
+```java
+
+public class FailFast {
+
+	public static void main(String[] args) {
+		//        List<Integer> numbers = List.of(1, 2, 3, 4, 5);
+
+		List<Integer> numbers = new ArrayList<>();
+		numbers.add(1);
+		numbers.add(2);
+		numbers.add(3);
+		numbers.add(4);
+		numbers.add(5);
+
+       // for (Integer number : numbers) {
+       //     if (number == 3) {
+       //         numbers.remove(number);
+       //     }
+       // }
+       // -> ConcurrentModificationException 발생 
+	   
+		// removeIf 사용하기
+       numbers.removeIf(number -> number == 3);
+ 
+		numbers.forEach(System.out::println);
+	}
+}
+
+```
