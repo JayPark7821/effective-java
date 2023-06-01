@@ -37,3 +37,7 @@ public class SetExample {
 * @Target : 어노테이션을 사용할 수 있는 위치 지정.
   * Type, Field, Method, Parameter, ...
   
+* Retention Policy
+  * Source : 컴파일러가 컴파일할 때만 유지. 컴파일 이후에는 사라짐.
+  * Class : 컴파일한 후에도 JVM에 의해 계속 참조가능. 단, 리플렉션을 이용해서 어노테이션 정보를 얻을 수 없음 (바이트코드에서 참조 가능).
+  * Runtime : 컴파일한 후에도 JVM에 의해 계속 참조가능. 리플렉션을 이용해서 어노테이션 정보를 얻을 수 있음.
