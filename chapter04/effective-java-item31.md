@@ -91,4 +91,28 @@ public class Stack<E> {
 }
 
 ```
- 
+
+### 핵심정리 2 : Comparator와 Comparable은 소비자
+* Comparable을 직접 구현하지 않고, 직접 구현한 다른 타입을 확장한 타입을 지원하려면 와일드 카드가 필요하다.
+* ScheduledFuture는 Comparable을 직접 구현하지 않았지만, 그 상위 타입 (Delayed)이 구현하고 있다.
+
+### 핵심정리 3 : 와일드카드 활용 팁
+* 메서드 선언에 타입 매개변수가 한 번만 나오면 와일드카드로 대체하라.
+  * 한정적 타입이라면 한정적 와일드카드로
+  * 비한적적 타입이라면 비한정적 와일드 카드로
+* 주의
+  * 비한정적 와일드카드로 정의한 타입에는 null을 제회한 아무것도 넣을 수 없다.
+
+```java
+public class Swap {
+   public static void swap(List<?> list, int i, int j) {
+	   list.set(i, list.set(j, list.get(i))); // error 비 한정적 와일드 카드는 어떤 타입이 올지 모르기 떄문에 null을 제외한 아무것도 넣을 수 없다.
+   }
+```
+
+```java
+public class Swap {
+    public static <E> void swap(List<E> list, int i, int j) {
+		list.set(i, list.set(j, list.get(i))); // 특정한 타입 E라고 알고 있다! 
+	}
+```
