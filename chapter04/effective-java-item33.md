@@ -161,3 +161,44 @@ public class GenericTypeInfer {
 }
 
 ```
+
+
+### 한정적 타입 토큰
+* 한정적 타입 토큰을 사용한다면, 이종 컨테이너에 사용할 수 있는 타입을 제한할 수 있다.
+  * AnnotatedElement<T extends Annotation> T  
+    getAnnotation(Class<T> annotationClass);
+* asSubclass 메서드
+  * 메서드를 호출하는 class 인스턴스를 인수로 명시한 클래스로 형변환 한다.
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+public @interface FindMe {
+}
+```
+```java
+@FindMe
+public class MyService {
+}
+```
+```java
+
+// 코드 asSubclass를 사용해 한정적 타입 토큰을 안전하게 형변환한다. (204쪽)
+public class PrintAnnotation {
+
+    static Annotation getAnnotation(AnnotatedElement element, String annotationTypeName) {
+        Class<?> annotationType = null; // 비한정적 타입 토큰
+        try {
+            annotationType = Class.forName(annotationTypeName);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException(ex);
+        }
+        return element.getAnnotation(annotationType.asSubclass(Annotation.class));
+    }
+
+    // 명시한 클래스의 명시한 애너테이션을 출력하는 테스트 프로그램
+    public static void main(String[] args) throws Exception {
+        System.out.println(getAnnotation(MyService.class, FindMe.class.getName()));
+    }
+}
+
+```
