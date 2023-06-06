@@ -93,3 +93,71 @@ public static void main(String[] args) {
        list.forEach(System.out::println);
     }
 ```
+
+
+### 슈퍼 타입 토큰
+* 익명 클래스와 제네릭 클래스 상속을 사용한 타입 토큰
+* 닐 게프터의 슈터 타입 토큰
+* https://gafter.blogspot.com/2006/12/super-type-tokens.html
+* https://gafter.blogspot.com/2007/05/limitation-of-super-type-tokens.html
+
+```java
+
+public class GenericTypeInfer {
+
+	static class Super<T> {
+		T value;
+	}
+
+	public static void main(String[] args) throws NoSuchFieldException {
+		Super<String> stringSuper = new Super<>();
+		System.out.println(stringSuper.getClass().getDeclaredField("value").getType());
+		// -> class java.lang.Object -> 컴파일러가 제네릭을 Object로 치환함.
+	}
+}
+```
+
+* 위 코드에선 T의 타입을 런타임에 알고싶어도 알 수가 없다. 
+* 단 한가지 방법이 있다 , 상속 받은 경우에 타입정보가 남는다.
+```java
+public class GenericTypeInfer {
+
+	static class Super<T> {
+		T value;
+	}
+	
+	static class Sub extends Super<String> {
+    }
+
+	public static void main(String[] args) throws NoSuchFieldException {
+		Super<String> stringSuper = new Super<>();
+		System.out.println(stringSuper.getClass().getDeclaredField("value").getType());
+		
+        Sub sub = new Sub();
+		Type type = sub.getClass().getGenericSuperclass();
+		ParameterizedType pType = (ParameterizedType) type;
+		System.out.println(pType.getActualTypeArguments()[0]);
+	}
+}
+```
+* 위 코드에서 Sub클래스의 선언없이 익명 내부클래스를 통해 제네릭 타입을 런타임에 가져올 수 있다.
+```java
+public class GenericTypeInfer {
+
+    static class Super<T> {
+        T value;
+    }
+
+    public static void main(String[] args) throws NoSuchFieldException {
+        Super<String> stringSuper = new Super<>();
+        System.out.println(stringSuper.getClass().getDeclaredField("value").getType());
+
+        Type type = (new Super<String>(){}).getClass().getGenericSuperclass();
+        ParameterizedType pType = (ParameterizedType) type;
+        Type actualTypeArgument = pType.getActualTypeArguments()[0];
+        System.out.println(actualTypeArgument);
+
+    }
+}
+
+```
